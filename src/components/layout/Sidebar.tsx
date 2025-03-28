@@ -159,9 +159,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   ];
 
   const kpiItems = [
-    { title: 'Value Streams', path: '/kpi-management?tab=valueStreams', icon: Factory },
-    { title: 'KPIs', path: '/kpi-management?tab=kpis', icon: Target },
-    { title: 'Tiers', path: '/kpi-management?tab=tiers', icon: BarChart2 }
+    { title: 'Líneas de Valor', path: '/kpi-management?tab=valueStreams', icon: Factory },
+    { title: 'Indicadores', path: '/kpi-management?tab=kpis', icon: Target },
+    { title: 'Niveles', path: '/kpi-management?tab=tiers', icon: BarChart2 }
   ];
 
   const settingsItems = [
@@ -263,7 +263,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
 
         <SidebarItem
           icon={<BarChart2 className="w-5 h-5" />}
-          title="Gestión de KPIs"
+          title="Configuración KPI"
           path="/kpi-management"
           isActive={location.pathname.startsWith('/kpi-management')}
           hasSubItems
