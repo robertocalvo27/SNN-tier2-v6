@@ -37,10 +37,12 @@ export const KPIForm: React.FC<KPIFormProps> = ({
     policies: '',
     valueType: 'nominal',
     unit: '',
+    target: 0,
     frequency: 'daily',
     responsibleId: '',
     tiers: [],
     formula: '',
+    active: true,
     dataSource: {
       type: 'manual',
       config: {}
@@ -133,6 +135,31 @@ export const KPIForm: React.FC<KPIFormProps> = ({
                   <option value="ratio">Ratio</option>
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Meta
+                </label>
+                <div className="mt-1 flex rounded-md shadow-sm">
+                  <input
+                    type="number"
+                    value={formData.target}
+                    onChange={(e) => setFormData({ ...formData, target: e.target.value ? parseFloat(e.target.value) : 0 })}
+                    className="flex-1 rounded-l-lg border-r-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
+                  <div className="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                    <input
+                      type="text"
+                      value={formData.unit}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      className="border-0 bg-transparent p-0 focus:ring-0 w-14"
+                      placeholder="Unidad"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -146,6 +173,22 @@ export const KPIForm: React.FC<KPIFormProps> = ({
                 className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 required
               />
+            </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="active"
+                checked={formData.active}
+                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="active" className="ml-3 block text-sm font-medium text-gray-700">
+                Indicador activo
+              </label>
+              <div className="ml-2 text-sm text-gray-500">
+                (Los indicadores inactivos no se mostrarán en los dashboards)
+              </div>
             </div>
 
             <div>

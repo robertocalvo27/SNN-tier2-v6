@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
   Plus,
@@ -24,14 +24,29 @@ import { TierForm } from './TierForm';
 // Mock data
 const mockCategories = [
   {
-    id: '1',
-    name: 'Productividad',
-    description: 'Métricas relacionadas con la eficiencia productiva'
+    id: 'safety',
+    name: 'Safety',
+    description: 'Métricas relacionadas con la seguridad'
   },
   {
-    id: '2',
-    name: 'Calidad',
+    id: 'quality',
+    name: 'Quality',
     description: 'Indicadores de calidad del producto'
+  },
+  {
+    id: 'delivery',
+    name: 'Delivery',
+    description: 'Métricas de cumplimiento y entrega'
+  },
+  {
+    id: 'production',
+    name: 'Production',
+    description: 'Indicadores de eficiencia productiva'
+  },
+  {
+    id: 'cost',
+    name: 'Cost',
+    description: 'Métricas relacionadas con costos'
   }
 ];
 
@@ -53,19 +68,113 @@ const mockValueStreams = [
 const mockKPIs = [
   {
     id: '1',
-    name: 'OEE',
-    description: 'Overall Equipment Effectiveness',
-    categoryId: '1',
+    name: 'Casi Casi Cerrados',
+    description: 'Porcentaje de casos casi cerrados',
+    categoryId: 'safety',
     valueType: 'percentage',
-    frequency: 'daily'
+    frequency: 'daily',
+    active: true,
+    target: 80,
+    unit: '%'
   },
   {
     id: '2',
-    name: 'Defectos',
-    description: 'Tasa de defectos por millón',
-    categoryId: '2',
-    valueType: 'ratio',
-    frequency: 'daily'
+    name: 'Accidentes y Primeros Auxilios (MTD)',
+    description: 'Número de incidentes en el mes',
+    categoryId: 'safety',
+    valueType: 'number',
+    frequency: 'daily',
+    active: true,
+    target: 0,
+    unit: 'incidents'
+  },
+  {
+    id: '3',
+    name: 'Ideas de Calidad',
+    description: 'Porcentaje de implementación de ideas de calidad',
+    categoryId: 'quality',
+    valueType: 'percentage',
+    frequency: 'weekly',
+    active: true,
+    target: 90,
+    unit: '%'
+  },
+  {
+    id: '4',
+    name: 'NCS',
+    description: 'Número de problemas de conformidad',
+    categoryId: 'quality',
+    valueType: 'number',
+    frequency: 'daily',
+    active: false,
+    target: 0,
+    unit: 'issues'
+  },
+  {
+    id: '5',
+    name: 'Producción vs Plan Semanal',
+    description: 'Cumplimiento del plan de producción semanal',
+    categoryId: 'delivery',
+    valueType: 'percentage',
+    frequency: 'weekly',
+    active: true,
+    target: 95,
+    unit: '%'
+  },
+  {
+    id: '6',
+    name: 'Órdenes Completas',
+    description: 'Porcentaje de órdenes entregadas completas',
+    categoryId: 'delivery',
+    valueType: 'percentage',
+    frequency: 'daily',
+    active: true,
+    target: 98,
+    unit: '%'
+  },
+  {
+    id: '7',
+    name: 'Yield',
+    description: 'Rendimiento de producción',
+    categoryId: 'production',
+    valueType: 'percentage',
+    frequency: 'daily',
+    active: true,
+    target: 85,
+    unit: '%'
+  },
+  {
+    id: '8',
+    name: 'Tiempo Fuera de Estándar',
+    description: 'Porcentaje de tiempo fuera de estándar',
+    categoryId: 'production',
+    valueType: 'percentage',
+    frequency: 'daily',
+    active: false,
+    target: 5,
+    unit: '%'
+  },
+  {
+    id: '9',
+    name: 'Absorción Total Acumulada',
+    description: 'Porcentaje de absorción total',
+    categoryId: 'cost',
+    valueType: 'percentage',
+    frequency: 'monthly',
+    active: true,
+    target: 100,
+    unit: '%'
+  },
+  {
+    id: '10',
+    name: 'Cumplimiento Presupuestario',
+    description: 'Porcentaje de cumplimiento del presupuesto',
+    categoryId: 'cost',
+    valueType: 'percentage',
+    frequency: 'monthly',
+    active: true,
+    target: 95,
+    unit: '%'
   }
 ];
 
@@ -89,7 +198,8 @@ const mockTiers = [
 export const KPIManagement: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'valueStreams');
+  const initialTab = searchParams.get('tab') || 'kpis';
+  const [activeTab, setActiveTab] = useState(initialTab === 'valueStreams' ? 'kpis' : initialTab);
   const [categories] = useState(mockCategories);
   const [valueStreams] = useState(mockValueStreams);
   const [kpis] = useState(mockKPIs);
@@ -99,9 +209,19 @@ export const KPIManagement: React.FC = () => {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Agregar un efecto para redirigir si se accede a valueStreams
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    if (currentTab === 'valueStreams') {
+      setSearchParams({ tab: 'kpis' });
+      setActiveTab('kpis');
+    }
+  }, [searchParams, setSearchParams]);
+
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setSearchParams({ tab });
+    const finalTab = tab === 'valueStreams' ? 'kpis' : tab;
+    setActiveTab(finalTab);
+    setSearchParams({ tab: finalTab });
   };
 
   const handleAdd = () => {
@@ -124,6 +244,19 @@ export const KPIManagement: React.FC = () => {
     // Implementar lógica de guardado
     setShowForm(false);
     setSuccessMessage('Cambios guardados correctamente');
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  const handleToggleActive = (kpi: any) => {
+    // En un entorno real, esto actualizaría la base de datos
+    // Para este mock, actualizamos el estado local
+    const updatedKpis = kpis.map(item => 
+      item.id === kpi.id ? { ...item, active: !item.active } : item
+    );
+    
+    // Aquí usaríamos setState si realmente modificáramos el estado
+    // Para simular el efecto, mostramos un mensaje de éxito
+    setSuccessMessage(`KPI ${kpi.active ? 'desactivado' : 'activado'} correctamente`);
     setTimeout(() => setSuccessMessage(''), 3000);
   };
 
@@ -213,32 +346,56 @@ export const KPIManagement: React.FC = () => {
                 {kpis
                   .filter((kpi) => selectedCategory === 'all' || kpi.categoryId === selectedCategory)
                   .map((kpi) => (
-                    <div key={kpi.id} className="bg-white rounded-lg shadow-lg p-6">
+                    <div key={kpi.id} className={`bg-white rounded-lg shadow-lg p-6 ${!kpi.active ? 'opacity-70' : ''}`}>
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center">
-                          <Target className="w-6 h-6 text-blue-600 mr-2" />
-                          <h3 className="text-lg font-semibold text-gray-900">{kpi.name}</h3>
+                          <Target className={`w-6 h-6 ${kpi.active ? 'text-blue-600' : 'text-gray-400'} mr-2`} />
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{kpi.name}</h3>
+                            <div className="flex items-center mt-1">
+                              {kpi.active ? (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                  Activo
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                  Inactivo
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                         <div className="flex space-x-2">
                           <button
+                            onClick={() => handleToggleActive(kpi)}
+                            className={`text-gray-400 hover:${kpi.active ? 'text-red-500' : 'text-green-500'}`}
+                            title={kpi.active ? 'Desactivar' : 'Activar'}
+                          >
+                            {kpi.active ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                          </button>
+                          <button
                             onClick={() => handleEdit(kpi)}
                             className="text-gray-400 hover:text-gray-500"
+                            title="Editar"
                           >
                             <Edit2 className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => handleDelete(kpi.id)}
                             className="text-gray-400 hover:text-red-500"
+                            title="Eliminar"
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>
                         </div>
                       </div>
                       <p className="text-sm text-gray-500 mb-4">{kpi.description}</p>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                         <span className="flex items-center">
                           <Database className="w-4 h-4 mr-1" />
-                          {kpi.valueType}
+                          Meta: {kpi.target} {kpi.unit}
                         </span>
                         <span className="flex items-center">
                           <Calendar className="w-4 h-4 mr-1" />
@@ -266,6 +423,9 @@ export const KPIManagement: React.FC = () => {
                         Frecuencia
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Acciones
                       </th>
                     </tr>
@@ -274,7 +434,7 @@ export const KPIManagement: React.FC = () => {
                     {kpis
                       .filter((kpi) => selectedCategory === 'all' || kpi.categoryId === selectedCategory)
                       .map((kpi) => (
-                        <tr key={kpi.id}>
+                        <tr key={kpi.id} className={!kpi.active ? 'bg-gray-50' : ''}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {kpi.name}
                           </td>
@@ -282,22 +442,44 @@ export const KPIManagement: React.FC = () => {
                             {kpi.description}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {kpi.valueType}
+                            {kpi.target} {kpi.unit}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {kpi.frequency}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {kpi.active ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                Activo
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <AlertTriangle className="w-3 h-3 mr-1" />
+                                Inactivo
+                              </span>
+                            )}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex space-x-2">
                               <button
+                                onClick={() => handleToggleActive(kpi)}
+                                className={`${kpi.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                                title={kpi.active ? 'Desactivar' : 'Activar'}
+                              >
+                                {kpi.active ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                              </button>
+                              <button
                                 onClick={() => handleEdit(kpi)}
                                 className="text-blue-600 hover:text-blue-900"
+                                title="Editar"
                               >
                                 <Edit2 className="w-5 h-5" />
                               </button>
                               <button
                                 onClick={() => handleDelete(kpi.id)}
                                 className="text-red-600 hover:text-red-900"
+                                title="Eliminar"
                               >
                                 <Trash2 className="w-5 h-5" />
                               </button>
@@ -376,16 +558,15 @@ export const KPIManagement: React.FC = () => {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de KPIs</h1>
-            <p className="text-gray-500">Administra los KPIs, value streams y tiers del sistema</p>
+            <h1 className="text-2xl font-bold text-gray-900">Configuración KPI</h1>
+            <p className="text-gray-500 mt-1">Gestiona los indicadores clave de rendimiento del sistema</p>
           </div>
           <button
             onClick={handleAdd}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Nuevo {activeTab === 'valueStreams' ? 'Value Stream' : 
-                   activeTab === 'kpis' ? 'KPI' : 'Tier'}
+            Nuevo {activeTab === 'kpis' ? 'Indicador' : 'Nivel'}
           </button>
         </div>
       </div>
@@ -405,17 +586,6 @@ export const KPIManagement: React.FC = () => {
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6" aria-label="Tabs">
             <button
-              onClick={() => handleTabChange('valueStreams')}
-              className={`py-4 px-1 inline-flex items-center border-b-2 font-medium text-sm ${
-                activeTab === 'valueStreams'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Factory className="w-5 h-5 mr-2" />
-              Value Streams
-            </button>
-            <button
               onClick={() => handleTabChange('kpis')}
               className={`py-4 px-1 inline-flex items-center border-b-2 font-medium text-sm ${
                 activeTab === 'kpis'
@@ -424,7 +594,7 @@ export const KPIManagement: React.FC = () => {
               }`}
             >
               <Target className="w-5 h-5 mr-2" />
-              KPIs
+              Indicadores
             </button>
             <button
               onClick={() => handleTabChange('tiers')}
@@ -435,7 +605,7 @@ export const KPIManagement: React.FC = () => {
               }`}
             >
               <BarChart2 className="w-5 h-5 mr-2" />
-              Tiers
+              Niveles
             </button>
           </nav>
         </div>
