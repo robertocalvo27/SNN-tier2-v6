@@ -159,14 +159,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   ];
 
   const kpiItems = [
-    { title: 'Líneas de Valor', path: '/kpi-management?tab=valueStreams', icon: Factory },
     { title: 'Indicadores', path: '/kpi-management?tab=kpis', icon: Target },
     { title: 'Niveles', path: '/kpi-management?tab=tiers', icon: BarChart2 }
   ];
 
   const settingsItems = [
     { title: 'Configuración Personal', path: '/settings/personal', icon: User },
-    { title: 'Configuración Empresarial', path: '/settings/company', icon: Building2 }
+    { title: 'Configuración Empresarial', path: '/settings/company', icon: Building2 },
+    { title: 'Configuración Producción', path: '/settings/production', icon: Factory },
+    { title: 'Configuración KPI', path: '/kpi-management', icon: Target }
   ];
 
   const handleLogout = () => {
@@ -262,22 +263,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
         />
 
         <SidebarItem
-          icon={<BarChart2 className="w-5 h-5" />}
-          title="Configuración KPI"
-          path="/kpi-management"
-          isActive={location.pathname.startsWith('/kpi-management')}
-          hasSubItems
-          isOpen={openSections.kpi}
-          onToggle={() => toggleSection('kpi')}
-          subItems={kpiItems}
-          isCollapsed={isCollapsed}
-        />
-
-        <SidebarItem
           icon={<Settings className="w-5 h-5" />}
           title="Configuración"
           path="/settings"
-          isActive={location.pathname.startsWith('/settings')}
+          isActive={location.pathname.startsWith('/settings') || location.pathname.startsWith('/kpi-management')}
           hasSubItems
           isOpen={openSections.settings}
           onToggle={() => toggleSection('settings')}
